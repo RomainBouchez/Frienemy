@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Admin — Question-copain</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <main class="admin">
+    <header class="admin-head">
+      <h1>Administration</h1>
+      <nav class="admin-nav">
+        <a href="/">← Retour au jeu</a>
+        <button id="logout" class="link-btn" type="button" hidden>Se déconnecter</button>
+      </nav>
+    </header>
+
+    <p id="global-error" class="notice" role="alert" hidden></p>
+
+    <!-- PIN screen: shown until GET /api/admin/check succeeds -->
+    <section id="pin-screen" class="card pin-card" aria-labelledby="h-pin">
+      <h2 id="h-pin">Accès admin</h2>
+      <form id="pin-form" novalidate>
+        <div class="field">
+          <label for="pin-input">PIN</label>
+          <input id="pin-input" type="password" inputmode="numeric" autocomplete="off">
+        </div>
+        <p id="pin-error" class="msg msg--error" role="alert" hidden></p>
+        <button id="pin-submit" class="btn btn--primary btn--block" type="submit">Entrer</button>
+      </form>
+    </section>
+
+    <p id="boot" class="msg msg--note" hidden>Vérification…</p>
+
+    <div id="admin-app" hidden>
+      <!-- Section Partie -->
+      <section class="card" aria-labelledby="h-game">
+        <h2 id="h-game">Partie</h2>
+        <div class="btn-row access-row">
+          <p id="access-label" class="access-label">Session…</p>
+          <button id="btn-access" class="btn btn--primary" type="button" disabled>Lancer la session</button>
+        </div>
+        <p class="msg msg--note">Tant que la session est fermée, personne ne peut choisir son nom (les joueurs déjà assis continuent).</p>
+        <p id="access-error" class="msg msg--error" role="alert" hidden></p>
+        <p id="phase-label" class="phase">Chargement…</p>
+
+        <div class="btn-row">
+          <button id="btn-reveal" class="btn btn--ghost" type="button" hidden>Révéler maintenant</button>
+          <button id="btn-next" class="btn btn--primary" type="button" hidden>Question suivante</button>
+          <button id="btn-reset" class="btn btn--danger" type="button" hidden>Arrêter la partie</button>
+        </div>
+        <p id="pilot-error" class="msg msg--error" role="alert" hidden></p>
+
+        <h3>Paramètres</h3>
+        <form id="settings-form" novalidate>
+          <div class="field">
+            <label for="set-limit">Nombre de questions</label>
+            <div class="stepper">
+              <button class="stepper-btn" type="button" data-step="-1" aria-label="Diminuer">−</button>
+              <input id="set-limit" type="text" inputmode="numeric" autocomplete="off" placeholder="Toutes" data-min="1" data-max="100">
+              <button class="stepper-btn" type="button" data-step="1" aria-label="Augmenter">+</button>
+            </div>
+          </div>
+          <fieldset class="field">
+            <legend>Types de questions</legend>
+            <p class="msg msg--note">Timer par type (min et s). Vide = timer de chaque question.</p>
+            <div class="type-row">
+              <label class="check"><input type="checkbox" name="set-type" value="single"> QCU</label>
+              <div class="timer-pair" data-timer-type="single">
+                <input class="timer-part" type="text" data-part="min" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="1" aria-label="Timer QCU, minutes">
+                <span class="timer-unit">min</span>
+                <input class="timer-part" type="text" data-part="sec" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="2" aria-label="Timer QCU, secondes">
+                <span class="timer-unit">s</span>
+              </div>
+            </div>
+            <div class="type-row">
+              <label class="check"><input type="checkbox" name="set-type" value="multiple"> QCM</label>
+              <div class="timer-pair" data-timer-type="multiple">
+                <input class="timer-part" type="text" data-part="min" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="1" aria-label="Timer QCM, minutes">
+                <span class="timer-unit">min</span>
+                <input class="timer-part" type="text" data-part="sec" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="2" aria-label="Timer QCM, secondes">
+                <span class="timer-unit">s</span>
+              </div>
+            </div>
+            <div class="type-row">
+              <label class="check"><input type="checkbox" name="set-type" value="ranking"> Classement</label>
+              <div class="timer-pair" data-timer-type="ranking">
+                <input class="timer-part" type="text" data-part="min" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="1" aria-label="Timer Classement, minutes">
+                <span class="timer-unit">min</span>
+                <input class="timer-part" type="text" data-part="sec" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="2" aria-label="Timer Classement, secondes">
+                <span class="timer-unit">s</span>
+              </div>
+            </div>
+            <div class="type-row">
+              <label class="check"><input type="checkbox" name="set-type" value="smartdumb"> Intelligent / Débile</label>
+              <div class="timer-pair" data-timer-type="smartdumb">
+                <input class="timer-part" type="text" data-part="min" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="1" aria-label="Timer Intelligent / Débile, minutes">
+                <span class="timer-unit">min</span>
+                <input class="timer-part" type="text" data-part="sec" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="2" aria-label="Timer Intelligent / Débile, secondes">
+                <span class="timer-unit">s</span>
+              </div>
+            </div>
+            <div class="type-row">
+              <label class="check"><input type="checkbox" name="set-type" value="tierlist"> Tierlist</label>
+              <div class="timer-pair" data-timer-type="tierlist">
+                <input class="timer-part" type="text" data-part="min" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="1" aria-label="Timer Tierlist, minutes">
+                <span class="timer-unit">min</span>
+                <input class="timer-part" type="text" data-part="sec" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="2" aria-label="Timer Tierlist, secondes">
+                <span class="timer-unit">s</span>
+              </div>
+            </div>
+            <div class="type-row">
+              <label class="check"><input type="checkbox" name="set-type" value="anecdote"> Anecdote</label>
+              <div class="timer-pair" data-timer-type="anecdote">
+                <input class="timer-part" type="text" data-part="min" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="1" aria-label="Timer Anecdote, minutes">
+                <span class="timer-unit">min</span>
+                <input class="timer-part" type="text" data-part="sec" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="2" aria-label="Timer Anecdote, secondes">
+                <span class="timer-unit">s</span>
+              </div>
+            </div>
+            <div class="type-row">
+              <label class="check"><input type="checkbox" name="set-type" value="guess"> Devine sa réponse</label>
+              <div class="timer-pair" data-timer-type="guess">
+                <input class="timer-part" type="text" data-part="min" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="1" aria-label="Timer Devine sa réponse, minutes">
+                <span class="timer-unit">min</span>
+                <input class="timer-part" type="text" data-part="sec" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="2" aria-label="Timer Devine sa réponse, secondes">
+                <span class="timer-unit">s</span>
+              </div>
+            </div>
+            <div class="type-row">
+              <label class="check"><input type="checkbox" name="set-type" value="which"> Quelle était la question ?</label>
+              <div class="timer-pair" data-timer-type="which">
+                <input class="timer-part" type="text" data-part="min" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="1" aria-label="Timer Quelle était la question ?, minutes">
+                <span class="timer-unit">min</span>
+                <input class="timer-part" type="text" data-part="sec" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="2" aria-label="Timer Quelle était la question ?, secondes">
+                <span class="timer-unit">s</span>
+              </div>
+            </div>
+          </fieldset>
+          <div class="field">
+            <label for="set-wheel">La roue qui balance (% des questions)</label>
+            <div class="stepper">
+              <button class="stepper-btn" type="button" data-step="-1" aria-label="Diminuer">−</button>
+              <input id="set-wheel" type="text" inputmode="numeric" autocomplete="off" placeholder="20" data-min="0" data-max="100">
+              <button class="stepper-btn" type="button" data-step="1" aria-label="Augmenter">+</button>
+            </div>
+            <p class="msg msg--note">Chance qu'une question QCU, QCM, Classement ou Intelligent / Débile déclenche la roue après ses résultats. 0 = jamais.</p>
+          </div>
+          <p id="settings-count" class="count"></p>
+          <p class="msg msg--note">Appliqué au prochain lancement.</p>
+          <p id="settings-error" class="msg msg--error" role="alert" hidden></p>
+          <p id="settings-saved" class="msg msg--note" hidden></p>
+          <button id="settings-submit" class="btn btn--primary" type="submit">Enregistrer</button>
+        </form>
+      </section>
+
+      <!-- Section Joueurs -->
+      <section class="card" aria-labelledby="h-players">
+        <h2 id="h-players">Joueurs</h2>
+        <p id="players-status" class="msg msg--error" role="alert" hidden></p>
+        <ul id="players-list" class="players"></ul>
+        <p id="players-empty" class="msg msg--note" hidden>Aucun joueur connecté.</p>
+      </section>
+
+      <!-- Section Invités (SPEC T13) -->
+      <section class="card" aria-labelledby="h-guests">
+        <h2 id="h-guests">Invités</h2>
+        <p id="guests-status" class="msg msg--error" role="alert" hidden></p>
+        <ul id="guests-list" class="players"></ul>
+        <p id="guests-empty" class="msg msg--note" hidden>Aucun invité enregistré</p>
+      </section>
+
+      <!-- Section Questions -->
+      <section class="card" aria-labelledby="h-questions">
+        <div class="section-head">
+          <h2 id="h-questions">Questions</h2>
+          <button id="q-new" class="btn btn--primary btn--sm" type="button">Nouvelle question</button>
+        </div>
+
+        <form id="q-form" class="qform" novalidate hidden>
+          <h3 id="q-form-title">Nouvelle question</h3>
+          <div class="field">
+            <label for="q-type">Type</label>
+            <select id="q-type">
+              <option value="single">QCU</option>
+              <option value="multiple">QCM</option>
+              <option value="ranking">Classement</option>
+              <option value="smartdumb">Intelligent / Débile</option>
+              <option value="tierlist">Tierlist</option>
+              <option value="anecdote">Anecdote</option>
+              <option value="guess">Devine sa réponse</option>
+              <option value="which">Quelle était la question ?</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="q-text" id="q-text-label">Question</label>
+            <input id="q-text" type="text" autocomplete="off">
+          </div>
+          <fieldset class="field" id="q-variants-wrap" hidden>
+            <legend>Questions possibles (3 à 5)</legend>
+            <ol class="variants" id="q-variants"></ol>
+            <button id="q-variant-add" class="btn btn--ghost btn--sm" type="button">Ajouter une question</button>
+          </fieldset>
+          <fieldset class="field" id="q-answer-kind-wrap" hidden>
+            <legend>Réponse attendue</legend>
+            <label class="check"><input type="radio" name="q-answer-kind" value="player" checked> Un copain</label>
+            <label class="check"><input type="radio" name="q-answer-kind" value="text"> Texte libre</label>
+          </fieldset>
+          <fieldset class="field" id="q-subjects-wrap">
+            <legend>Sujets</legend>
+            <label class="check"><input type="radio" name="q-subjects" value="players" checked> Joueurs</label>
+            <label class="check"><input type="radio" name="q-subjects" value="custom"> Propositions</label>
+          </fieldset>
+          <fieldset class="field" id="q-guess-players-wrap" hidden>
+            <legend>Copains de la question</legend>
+            <label class="check"><input type="radio" name="q-guess-players" value="online" checked> Copains en ligne</label>
+            <label class="check"><input type="radio" name="q-guess-players" value="all"> Tous les copains</label>
+          </fieldset>
+          <div class="field" id="q-options-wrap" hidden>
+            <label for="q-options">Propositions (une par ligne)</label>
+            <textarea id="q-options" rows="5"></textarea>
+          </div>
+          <div class="field" id="q-max-wrap" hidden>
+            <label for="q-max">Nombre de choix maximum (vide = illimité)</label>
+            <div class="stepper">
+              <button class="stepper-btn" type="button" data-step="-1" aria-label="Diminuer">−</button>
+              <input id="q-max" type="text" inputmode="numeric" autocomplete="off" data-min="1" data-max="12">
+              <button class="stepper-btn" type="button" data-step="1" aria-label="Augmenter">+</button>
+            </div>
+          </div>
+          <div class="field" id="q-negative-wrap" hidden>
+            <label class="check"><input id="q-negative" type="checkbox"> Question négative (S, 1er ou un vote = mauvais)</label>
+          </div>
+          <fieldset class="field">
+            <legend>Timer</legend>
+            <div class="timer-pair" id="q-timer">
+              <input class="timer-part" type="text" data-part="min" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="1" aria-label="Timer de la question, minutes">
+              <span class="timer-unit">min</span>
+              <input class="timer-part" type="text" data-part="sec" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="2" aria-label="Timer de la question, secondes">
+              <span class="timer-unit">s</span>
+            </div>
+          </fieldset>
+          <label class="check"><input id="q-enabled" type="checkbox" checked> Actif</label>
+          <p id="q-error" class="msg msg--error" role="alert" hidden></p>
+          <div class="form-actions">
+            <button id="q-submit" class="btn btn--primary" type="submit">Créer la question</button>
+            <button id="q-cancel" class="btn btn--ghost" type="button">Annuler</button>
+          </div>
+        </form>
+
+        <!-- Filter over the loaded list (SPEC T15): client-side only -->
+        <div class="qfilter" role="search">
+          <div class="field">
+            <label for="f-text">Rechercher</label>
+            <input id="f-text" type="text" autocomplete="off">
+          </div>
+          <div class="qfilter-row">
+            <div class="field">
+              <label for="f-type">Type</label>
+              <select id="f-type">
+                <option value="">Tous</option>
+                <option value="single">QCU</option>
+                <option value="multiple">QCM</option>
+                <option value="ranking">Classement</option>
+                <option value="smartdumb">Intelligent / Débile</option>
+                <option value="tierlist">Tierlist</option>
+                <option value="anecdote">Anecdote</option>
+                <option value="guess">Devine sa réponse</option>
+                <option value="which">Quelle était la question ?</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="f-status">Statut</label>
+              <select id="f-status">
+                <option value="">Toutes</option>
+                <option value="enabled">Actives</option>
+                <option value="disabled">Désactivées</option>
+                <option value="pending">En attente</option>
+              </select>
+            </div>
+          </div>
+          <div class="qfilter-foot">
+            <p id="q-count" class="msg msg--note"></p>
+            <button id="f-reset" class="btn btn--ghost btn--sm" type="button">Réinitialiser</button>
+          </div>
+        </div>
+
+        <p id="q-list-error" class="msg msg--error" role="alert" hidden></p>
+        <ul id="q-list" class="qlist"></ul>
+        <p id="q-empty" class="msg msg--note" hidden>Aucune question.</p>
+        <p id="q-nomatch" class="msg msg--note" hidden>Aucune question ne correspond au filtre.</p>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="/js/admin.js"></script>
+</body>
+</html>

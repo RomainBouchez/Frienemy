@@ -1,0 +1,89 @@
+[
+  {
+    "id": "q_f00d0001",
+    "type": "single",
+    "text": "Qui se perdrait le plus vite dans un supermarché ?",
+    "subjects": "players",
+    "options": [],
+    "maxChoices": null,
+    "timer": 30,
+    "enabled": true
+  },
+  {
+    "id": "q_f00d0002",
+    "type": "multiple",
+    "text": "Qui ne tiendrait pas une journée sans son téléphone ?",
+    "subjects": "players",
+    "options": [],
+    "maxChoices": 3,
+    "timer": 30,
+    "enabled": true
+  },
+  {
+    "id": "q_f00d0003",
+    "type": "ranking",
+    "text": "Classe-les du plus bavard au plus silencieux",
+    "subjects": "players",
+    "options": [],
+    "maxChoices": null,
+    "timer": 30,
+    "enabled": true
+  },
+  {
+    "id": "q_f00d0004",
+    "type": "smartdumb",
+    "text": "Le plus intelligent / le plus débile",
+    "subjects": "players",
+    "options": [],
+    "maxChoices": null,
+    "timer": 30,
+    "enabled": true
+  },
+  {
+    "id": "q_f00d0005",
+    "type": "tierlist",
+    "text": "Tierlist des excuses pour arriver en retard",
+    "subjects": "custom",
+    "options": ["Le réveil a sonné trop tard", "Le métro", "Le chat", "La pluie", "Le GPS"],
+    "maxChoices": null,
+    "timer": 30,
+    "enabled": true
+  },
+  {
+    "id": "q_f00d0006",
+    "type": "anecdote",
+    "text": "Thème : une catastrophe en cuisine",
+    "subjects": "players",
+    "options": [],
+    "maxChoices": null,
+    "timer": 180,
+    "enabled": true
+  },
+  {
+    "id": "q_f00d0007",
+    "type": "guess",
+    "text": "Qui gagnerait un concours de pâtisserie ?",
+    "subjects": "players",
+    "options": [],
+    "maxChoices": null,
+    "timer": 30,
+    "enabled": true
+  },
+  {
+    "id": "q_f00d0008",
+    "type": "which",
+    "text": "Spécial soirée",
+    "subjects": "players",
+    "options": [],
+    "maxChoices": null,
+    "timer": 45,
+    "enabled": true,
+    "variants": [
+      "Quel est ton plus mauvais cadeau reçu ?",
+      "Quel est ton plat préféré à 3 h du matin ?",
+      "Quelle chanson mets-tu quand tu danses seul ?",
+      "Qu'est-ce que tu ferais avec un million d'euros demain ?"
+    ],
+    "answerKind": "player"
+  }
+]

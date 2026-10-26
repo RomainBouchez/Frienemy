@@ -1,0 +1,3495 @@
+/* Player screens (SPEC §10). Only what base.css does not provide: screen layouts, timer bar, tier rows,
+   results bars, answered row, sticky bottom button. Mobile first; the column is .container (max 480px). */
+
+[hidden] {
+  display: none !important;
+}
+
+/* Screens */
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 8px;
+}
+
+.screen__title {
+  margin: 8px 0 0;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 44px;
+  line-height: 0.9;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.grid-3 .tile__name {
+  font-size: 15px;
+}
+
+/* Choices: two columns of stickers (players) or coloured faces (custom options) */
+.choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 12px;
+  padding: 6px 4px;
+}
+
+/* Static tilt of the stickers, 4-step rhythm (picker and choices) */
+.grid-3 > :nth-child(4n + 1),
+.choice-grid > :nth-child(4n + 1) {
+  transform: rotate(-2deg);
+}
+
+.grid-3 > :nth-child(4n + 2),
+.choice-grid > :nth-child(4n + 2) {
+  transform: rotate(1.5deg);
+}
+
+.grid-3 > :nth-child(4n + 3),
+.choice-grid > :nth-child(4n + 3) {
+  transform: rotate(1deg);
+}
+
+.grid-3 > :nth-child(4n),
+.choice-grid > :nth-child(4n) {
+  transform: rotate(-1.5deg);
+}
+
+/* A selection lifts; the other stickers of the same grid fade (after the tilt, so it wins) */
+.grid-3 > .is-selected,
+.choice-grid > .is-selected {
+  transform: scale(1.05);
+  z-index: 1;
+}
+
+.choice-grid:has(.is-selected) > :not(.is-selected) {
+  opacity: 0.6;
+}
+
+.muted,
+.eyebrow,
+.counter,
+.footer {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0;
+}
+
+.footer {
+  text-align: center;
+  padding: 8px 0;
+}
+
+.footer a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 12px;
+  color: var(--muted);
+}
+
+.question-text {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 31px;
+  font-weight: 900;
+  line-height: 0.95;
+  overflow-wrap: anywhere;
+}
+
+/* Host live edit (T11): title row with the pencil, edit form, notice for the players */
+.question-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.question-head .question-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.edit-btn {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.edit-btn:focus-visible,
+.edit-form__input:focus {
+  outline: 3px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.edit-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.edit-form__label {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.edit-form__input {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--sticker);
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+}
+
+.edit-form__actions {
+  display: flex;
+  gap: 12px;
+}
+
+.edit-form__actions .btn {
+  flex: 1 1 0;
+}
+
+.edit-form .btn[disabled] {
+  cursor: not-allowed;
+}
+
+/* Toast: non-blocking notice, bottom centre, never takes a tap */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  z-index: 95;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+.error {
+  margin: 0;
+  color: var(--error-text);
+  font-weight: 600;
+}
+
+.answer-sent {
+  margin: 0;
+  padding: 16px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.btn--block {
+  width: 100%;
+}
+
+.link-btn {
+  align-self: center;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Sticky bottom area (answer button, host controls) */
+.sticky-bottom {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+  padding: 12px 0;
+  background: var(--bg);
+}
+
+/* Round head: « Question i/n », rounds left, one dash per round */
+.round-head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rounds {
+  display: flex;
+  gap: 4px;
+}
+
+.rounds__dash {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 6px;
+  border-radius: 3px;
+  background: rgb(255 255 255 / 0.25);
+}
+
+.rounds__dash.is-done {
+  background: var(--text);
+}
+
+.rounds__dash.is-current {
+  background: var(--accent);
+}
+
+/* Question timer: 8px bar pinned to the top, width set by app.js */
+.timer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  z-index: 90;
+  background: rgb(255 255 255 / 0.25);
+}
+
+.timer__bar {
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+}
+
+.timer__bar.is-urgent {
+  background: var(--accent-2);
+}
+
+/* Reconnection banner: action button (« Reprendre ici ») */
+.banner__action {
+  min-height: 44px;
+  margin-left: 12px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Widgets */
+.widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.is-static {
+  cursor: default;
+}
+
+.pill.is-disabled {
+  opacity: 0.35;
+}
+
+/* Sticker name strip: red, one line, ellipsis */
+.tile__name {
+  display: block;
+  width: 100%;
+  padding: 2px 6px;
+  border-radius: 0 0 6px 6px;
+  background: var(--accent-2);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 17px;
+  line-height: 1.45;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The strip slides under the photo (positioned, so painted above) to fill its rounded bottom corners */
+.tile > .avatar + .tile__name {
+  margin-top: -6px;
+  padding-top: 8px;
+}
+
+/* Status pill centred on the photo */
+.tile__meta {
+  position: absolute;
+  top: 44%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.tile.is-online .tile__meta::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 5px;
+  vertical-align: 1px;
+  border-radius: 50%;
+  background: var(--ok);
+}
+
+/* Picker: taken friends (online) are greyed and flat, free ones are tilted with a folded corner */
+.grid-3.picker > .tile.is-online {
+  opacity: 1;
+  transform: none;
+  box-shadow: none;
+}
+
+.grid-3.picker > .tile.is-online .avatar {
+  filter: grayscale(1);
+}
+
+/* Faded with an opaque white veil, not opacity: a translucent photo would show the strip under it */
+.grid-3.picker > .tile.is-online .avatar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgb(255 255 255 / 0.3);
+}
+
+.grid-3.picker > .tile.is-online .tile__name {
+  background: var(--online-band);
+}
+
+.grid-3.picker > .tile.is-offline {
+  opacity: 0.65;
+}
+
+.grid-3.picker > .tile:not(.is-online):not(.is-offline):not(.tile--add)::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 0 10px 0 6px;
+  background: linear-gradient(225deg, var(--bg) 50%, var(--sticker-corner) 50%);
+  box-shadow: -2px 2px 3px rgb(0 0 0 / 0.2);
+  /* Above the photo: the folded corner covers it, as on a real peeled sticker. */
+  z-index: 1;
+}
+
+/* Custom options: coloured square stickers with the text on the face */
+.choice-grid--custom .pill {
+  justify-content: center;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  padding: 10px;
+  border: 5px solid var(--sticker);
+  border-radius: 10px;
+  box-shadow: var(--shadow-sticker);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 24px;
+  line-height: 1;
+  text-align: center;
+}
+
+.choice-grid--custom .pill:nth-child(6n + 1) { background: var(--pill-1); }
+.choice-grid--custom .pill:nth-child(6n + 2) { background: var(--pill-2); }
+.choice-grid--custom .pill:nth-child(6n + 3) { background: var(--pill-3); }
+.choice-grid--custom .pill:nth-child(6n + 4) { background: var(--pill-4); }
+.choice-grid--custom .pill:nth-child(6n + 5) { background: var(--pill-5); }
+.choice-grid--custom .pill:nth-child(6n) { background: var(--pill-6); }
+
+.choice-grid--custom .pill.is-selected::after {
+  top: -10px;
+  right: -10px;
+  transform: none;
+}
+
+.pill__label {
+  overflow-wrap: anywhere;
+}
+
+.zone__title {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* Ranking results (list of rows) */
+.rank-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Tierlist rows */
+.tier-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  padding: 4px;
+  border-radius: var(--radius-sticker);
+  background: rgb(255 255 255 / 0.12);
+}
+
+.tier-row__label {
+  flex: 0 0 44px;
+  width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 30px;
+  cursor: pointer;
+}
+
+.tier-row__label[data-tier="S"] { background: var(--tier-s); }
+.tier-row__label[data-tier="A"] { background: var(--tier-a); }
+.tier-row__label[data-tier="B"] { background: var(--tier-b); }
+.tier-row__label[data-tier="C"] { background: var(--tier-c); }
+.tier-row__label[data-tier="D"] { background: var(--tier-d); }
+
+.tier-row__zone,
+.tier-pool {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-height: 44px;
+}
+
+.tier-pool {
+  padding: 6px;
+  border: 2px dashed rgb(255 255 255 / 0.45);
+  border-radius: var(--radius-sticker);
+}
+
+/* Tierlist: mini-stickers with a white frame */
+.tier-row .chip {
+  padding: 3px 8px 3px 3px;
+  border-radius: 8px;
+  background: var(--sticker);
+  color: var(--ink);
+  box-shadow: var(--shadow-sticker);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 12px 0 4px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--sticker);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.chip.is-selected {
+  box-shadow: 0 0 0 3px var(--accent);
+}
+
+.chip--static {
+  cursor: default;
+}
+
+.chip__label {
+  overflow-wrap: anywhere;
+}
+
+/* Answered row (« 4/6 ont répondu ») */
+.answered {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.answered__avatars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+}
+
+/* Small overlapping heads (26px), white-ringed by the page colour */
+.answered__item {
+  position: relative;
+  display: inline-block;
+  margin-left: -8px;
+  opacity: 0.35;
+}
+
+.answered__item:first-child {
+  margin-left: 0;
+}
+
+.answered__item .avatar {
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--bg);
+}
+
+.answered__item.is-done {
+  opacity: 1;
+}
+
+.answered__check {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--ok);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 16px;
+  text-align: center;
+}
+
+/* Lobby seats */
+.seats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.seat {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 72px;
+}
+
+.seat.is-offline {
+  opacity: 0.35;
+}
+
+.seat .avatar {
+  box-shadow: 0 0 0 3px var(--sticker);
+}
+
+.seat__name {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.seat__dot {
+  position: absolute;
+  top: 0;
+  right: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--ok);
+  border: 2px solid var(--bg);
+}
+
+/* Results */
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.results__rows,
+.results__tiers {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Results: the winner is a shiny sticker (static foil, not animated), then the other rows as white lines */
+.result-winner {
+  position: relative;
+  width: 64%;
+  margin: 8px auto 0;
+  padding: 7px;
+  border-radius: 14px;
+  background: var(--foil);
+  box-shadow: 0 10px 24px rgb(0 0 0 / 0.35);
+  transform: rotate(-2deg);
+}
+
+.result-winner .avatar {
+  position: relative;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+}
+
+.result-winner .avatar img {
+  position: absolute;
+  inset: 0;
+}
+
+.result-winner__name {
+  display: block;
+  margin-top: -2px;
+  padding: 2px 6px;
+  border-radius: 0 0 8px 8px;
+  background: var(--accent-2);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 24px;
+  line-height: 1.4;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Custom option (no photo above): the strip is rounded on all corners */
+.result-winner__name:first-child {
+  border-radius: 8px;
+}
+
+/* Vote count: yellow disc on the top-right corner */
+.result-winner__count {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  display: grid;
+  place-content: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 22px;
+  line-height: 0.9;
+  text-align: center;
+  box-shadow: 0 3px 0 var(--accent-shadow);
+}
+
+.result-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sticker);
+  background: var(--sticker);
+  color: var(--ink);
+}
+
+.result-row__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.result-row__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.result-row__label {
+  overflow-wrap: anywhere;
+}
+
+.result-row__count {
+  min-width: 2ch;
+  text-align: right;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 20px;
+}
+
+.badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.bar {
+  height: 12px;
+  border-radius: 999px;
+  background: var(--track);
+  overflow: hidden;
+}
+
+.bar__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--bg);
+  transition: width 300ms;
+}
+
+.bar__fill.is-top {
+  background: var(--accent-2);
+}
+
+/* Ranking results (« L'Album »): podium of the three first places (2e left, 1er centre, 3e right), each a
+   vignette standing on its step; then white lines for the other places. No average is shown. */
+.rank-board {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.rank-podium {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Only the places that exist are drawn; the group stays centred. Columns 1fr 1.2fr 1fr, capped for wide screens. */
+.rank-podium__place {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 112px;
+}
+
+.rank-podium__place--1 {
+  order: 2;
+  flex-grow: 1.2;
+  max-width: 132px;
+}
+
+.rank-podium__place--2 {
+  order: 1;
+}
+
+.rank-podium__place--3 {
+  order: 3;
+}
+
+/* Vignette: the .tile sticker of base.css (white frame 5 px, photo square, red name strip); static, not a button */
+.rank-podium .rank-podium__card {
+  cursor: default;
+}
+
+.rank-podium .rank-podium__card:active {
+  scale: none;
+}
+
+/* 1er: the frame takes the static foil */
+.rank-podium__place--1 .rank-podium__card {
+  background: var(--foil);
+}
+
+/* Proposal without photo: coloured face with the text, as the choices */
+.rank-podium__face {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1 / 1;
+  padding: 8px;
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 20px;
+  line-height: 1.05;
+  text-align: center;
+}
+
+.rank-podium__face-label {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+/* Step: translucent white, rounded top corners; height by place; the rank in big display figures */
+.rank-podium__step {
+  display: grid;
+  place-items: center;
+  height: 38px;
+  border-radius: 6px 6px 0 0;
+  background: rgb(255 255 255 / 0.18);
+}
+
+.rank-podium__place--1 .rank-podium__step {
+  height: 70px;
+}
+
+.rank-podium__place--2 .rank-podium__step {
+  height: 52px;
+}
+
+.rank-podium__num {
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 34px;
+  line-height: 1;
+}
+
+/* Lines from the fourth place: white, rank in red, small round photo or nothing, name on one line */
+.rank-result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sticker);
+  background: var(--sticker);
+  color: var(--ink);
+}
+
+.rank-result__num {
+  min-width: 28px;
+  text-align: center;
+  color: var(--accent-2);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.rank-result__label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+/* Drag and drop (dnd.js): sources, ghost, drop highlight */
+.is-draggable {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  cursor: grab;
+}
+
+.is-draggable img {
+  pointer-events: none;
+}
+
+.is-drag-source {
+  opacity: 0.4;
+}
+
+.is-drop-hover {
+  outline: 3px solid var(--accent);
+  outline-offset: -3px;
+}
+
+.drag-ghost {
+  position: fixed;
+  left: 0;
+  top: 0;
+  margin: 0;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0.85;
+  transform: scale(1.04);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+  cursor: grabbing;
+}
+
+/* Ranking (propositions or players): podium, list slots, pool. Compact: 13 items must fit a phone (SPEC §10) */
+.widget--ranking {
+  gap: 6px;
+}
+
+.widget--ranking .zone__title {
+  line-height: 16px;
+}
+
+.podium {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.rank-slots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.rank-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border: 2px dashed rgb(255 255 255 / 0.45);
+  border-radius: var(--radius);
+  background: transparent;
+}
+
+.rank-slot.is-filled {
+  border-style: solid;
+  border-color: transparent;
+  background: transparent;
+}
+
+/* Podium: 64 px (1er 72 px), label above the chip */
+.podium__slot {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 64px;
+  padding: 2px 4px;
+  gap: 2px;
+}
+
+.podium__slot--1 {
+  min-height: 72px;
+}
+
+/* Podium rank: yellow round badge, ink figure */
+.podium__slot .rank-slot__label {
+  min-width: 26px;
+  height: 26px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 26px;
+  text-align: center;
+}
+
+/* List slot: one line, 44 px high, rank on the left, chip inline */
+.rank-slot--row {
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 4px;
+}
+
+.rank-slot--row .rank-chip {
+  flex: 1;
+  min-width: 0;
+}
+
+.rank-slot__label {
+  min-width: 28px;
+  color: var(--accent-2);
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 14px;
+}
+
+/* Compact chip (pool and slots): 40 px high, avatar 28 px, long text ellipsis */
+.rank-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  min-width: 0;
+  height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--sticker);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: grab;
+}
+
+/* Player chip: avatar before the name */
+.rank-chip--player {
+  padding-left: 6px;
+}
+
+.rank-chip .avatar {
+  border-radius: 6px;
+}
+
+.rank-chip__label {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.rank-chip.is-selected {
+  box-shadow: 0 0 0 3px var(--accent);
+}
+
+.rank-pool {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 48px;
+  padding: 6px;
+  border: 2px dashed rgb(255 255 255 / 0.45);
+  border-radius: var(--radius);
+}
+
+.rank-pool .rank-chip {
+  width: auto;
+}
+
+/* Intelligent / Débile: badge tokens, tray, badge on a player tile */
+.badge-tray {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 8px;
+  border-radius: 12px;
+  background: rgb(0 0 0 / 0.18);
+}
+
+/* Intelligent / Débile tokens: round holographic badges */
+.badge-token {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 74px;
+  height: 74px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--foil);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 15px;
+  line-height: 1;
+  text-align: center;
+  box-shadow: 0 0 0 3px var(--sticker), 0 4px 0 rgb(0 0 0 / 0.25);
+  cursor: grab;
+}
+
+.badge-token--smart {
+  background: var(--foil);
+}
+
+.badge-token--dumb {
+  background: var(--foil);
+}
+
+.badge-token.is-selected {
+  outline: 3px solid var(--text);
+  outline-offset: 2px;
+}
+
+/* Badge stuck on a sticker: bottom-right corner, tilted (as in the album mock-up) */
+.tile__badge {
+  position: absolute;
+  top: auto;
+  left: auto;
+  right: -4px;
+  bottom: 22px;
+  z-index: 1;
+  width: 66px;
+  height: 66px;
+  max-width: none;
+  padding: 0;
+  font-size: 13px;
+  white-space: nowrap;
+  transform: rotate(8deg);
+}
+
+/* Tierlist pager (results) */
+.pager {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pager__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pager__btn {
+  min-width: 52px;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.pager__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pager__indicator {
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-weight: 800;
+}
+
+.pager__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 18px;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* Anecdote (T9): write textarea and counter */
+/* The write field is the back of a sticker: pale paper with the printed blue stripes */
+.anecdote-input {
+  width: 100%;
+  min-height: 140px;
+  padding: 12px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--paper) repeating-linear-gradient(-45deg, var(--paper-line) 0 6px, transparent 6px 12px);
+  box-shadow: var(--shadow-sticker);
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.4;
+  resize: vertical;
+}
+
+.anecdote-input:focus {
+  outline: 3px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* Counter on a light pill, readable on the blue page and on the paper */
+.anecdote-counter {
+  display: block;
+  width: fit-content;
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--sticker);
+  color: var(--ink);
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Anecdote (T9): read stage, one big anonymous card */
+.anecdote-read {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+  min-height: 220px;
+  padding: 24px;
+  border-radius: var(--radius);
+  background: var(--sticker);
+  color: var(--ink);
+  box-shadow: var(--shadow-sticker);
+}
+
+.anecdote-read__text {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 26px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+/* Anecdote (T9): match stage, cards with a dotted slot */
+.anecdote-match {
+  gap: 16px;
+}
+
+.anecdote-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--radius);
+  background: var(--sticker);
+  color: var(--ink);
+}
+
+.anecdote-card.is-own {
+  opacity: 0.4;
+}
+
+.anecdote-card__text {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.anecdote-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 6px;
+  border: 2px dashed rgb(255 255 255 / 0.45);
+  border-radius: 10px;
+}
+
+.anecdote-slot.is-filled {
+  border-style: solid;
+  background: var(--sticker);
+  color: var(--ink);
+}
+
+.anecdote-slot__hint {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.author-tray {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 8px;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.author-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 12px 0 4px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--sticker);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.author-chip.is-static {
+  cursor: default;
+}
+
+.author-chip.is-selected {
+  box-shadow: 0 0 0 3px var(--accent);
+}
+
+.author-chip__label {
+  overflow-wrap: anywhere;
+}
+
+/* Anecdote (T9): results */
+.anecdote-result {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--radius);
+  background: var(--sticker);
+  color: var(--ink);
+}
+
+.anecdote-result__text {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.anecdote-result__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.anecdote-result__name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.found-avatars {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.score-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.score-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+}
+
+.score-row__name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.score-row__value {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 20px;
+}
+
+/* Débrief (end screen): cards staggered in, still when the user prefers reduced motion */
+.debrief__heading {
+  margin: 0;
+  font-size: 22px;
+}
+
+.debrief-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  text-align: center;
+  animation: debrief-in 420ms ease-out both;
+  animation-delay: calc(var(--i, 0) * 900ms);
+}
+
+/* Photos on a debrief card get a white sticker frame */
+.debrief-card .avatar {
+  box-shadow: 0 0 0 3px var(--sticker);
+}
+
+.debrief-card__faces {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Title emoji: sticker on the bottom-right corner of the photo(s) */
+.debrief-card__emoji {
+  position: absolute;
+  right: -14px;
+  bottom: -6px;
+  font-size: 28px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45));
+}
+
+.debrief-card__names {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.debrief-card__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 24px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.debrief-card__phrase {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.debrief-card__stat {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+@keyframes debrief-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .debrief-card {
+    animation: none;
+  }
+}
+
+/* Lobby: « Propositions à valider » (host, T12) */
+.proposals {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.proposals__title {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.proposal-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  min-width: 0;
+}
+
+.proposal-card__meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.proposal-card__text {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.proposal-card__answers {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+
+.proposal-card__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.proposal-card__actions .btn {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.proposal-card__actions .btn[disabled] {
+  cursor: not-allowed;
+}
+
+/* Wizard « Proposer une question » (T12): full-screen overlay, one choice per screen, mobile first */
+.wizard {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  overflow-y: auto;
+  background: var(--bg);
+}
+
+.wizard__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.wizard__head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wizard__title {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.wizard__title:focus {
+  outline: none;
+}
+
+.wizard__body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Step 1: big cards, one kind per tap */
+.kind-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  min-height: 88px;
+  padding: 16px 18px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--sticker);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.kind-card__title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 20px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.kind-card__hint {
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+
+/* Card with an illustration: text on the left, the kind's mini drawing on the right */
+.kind-card:has(.kind-art) {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.kind-card__text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+
+.kind-art {
+  flex: none;
+  width: 76px;
+}
+
+/* Qui est le plus / Qui pourrait: three mini player tiles, the picked ones ringed */
+.mini-people {
+  display: flex;
+  justify-content: space-between;
+}
+
+.mini-person {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  width: 23px;
+  height: 30px;
+  border-radius: 5px;
+  background: var(--surface-2);
+  overflow: hidden;
+  opacity: 0.4;
+}
+
+.mini-person::before,
+.mini-person::after {
+  content: '';
+  background: var(--person);
+}
+
+.mini-person::before {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+}
+
+.mini-person::after {
+  width: 17px;
+  height: 9px;
+  border-radius: 9px 9px 0 0;
+}
+
+.mini-person.is-picked {
+  opacity: 1;
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.mini-person--s { --person: var(--tier-s); }
+.mini-person--c { --person: var(--tier-c); }
+.mini-person--d { --person: var(--tier-d); }
+
+/* Choix unique / multiple: three option pills, one selected */
+.mini-pills {
+  display: grid;
+  gap: 4px;
+}
+
+.mini-pill {
+  display: flex;
+  align-items: center;
+  height: 14px;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--surface-2);
+}
+
+.mini-pill__label {
+  width: 55%;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--muted);
+  opacity: 0.6;
+}
+
+.mini-pill.is-picked {
+  box-shadow: 0 0 0 1.5px var(--accent);
+}
+
+.mini-pill.is-picked::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  margin-left: auto;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* Top du… au…: podium 2-1-3 with a friend on each step */
+.mini-podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3px;
+}
+
+.mini-podium__place {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 22px;
+}
+
+.mini-podium__head {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--person);
+}
+
+.mini-podium__step {
+  display: grid;
+  place-items: start center;
+  width: 100%;
+  padding-top: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.mini-podium__place--1 .mini-podium__step {
+  height: 34px;
+  background: var(--accent);
+  color: var(--ink);
+}
+
+.mini-podium__place--2 .mini-podium__step { height: 24px; }
+.mini-podium__place--3 .mini-podium__step { height: 16px; }
+
+/* Anecdote sur…: speech bubble with three lines of text */
+.mini-bubble {
+  position: relative;
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  height: 42px;
+  margin-bottom: 8px;
+  padding: 0 9px;
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+
+.mini-bubble::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  bottom: -8px;
+  border-top: 8px solid var(--surface-2);
+  border-right: 8px solid transparent;
+}
+
+.mini-bubble__line {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--muted);
+  opacity: 0.6;
+}
+
+.mini-bubble__line:nth-child(2) { width: 85%; }
+.mini-bubble__line:nth-child(3) { width: 50%; }
+
+/* Devine sa réponse: one picked friend, with a « ? » bubble above */
+.mini-guess {
+  position: relative;
+  height: 52px;
+}
+
+.mini-guess .mini-person {
+  position: absolute;
+  left: 8px;
+  bottom: 0;
+}
+
+.mini-guess__bubble {
+  position: absolute;
+  top: 0;
+  right: 4px;
+  display: grid;
+  place-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #15121f;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 18px;
+  line-height: 1;
+  text-align: center;
+}
+
+/* Range en S, A, B, C, D: empty tier list */
+.mini-tier {
+  display: grid;
+  gap: 3px;
+}
+
+.mini-tier__row {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  gap: 3px;
+  height: 12px;
+}
+
+.mini-tier__letter {
+  display: grid;
+  place-items: center;
+  border-radius: 3px;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 9px;
+  line-height: 1;
+}
+
+.mini-tier__letter--s { background: var(--tier-s); }
+.mini-tier__letter--a { background: var(--tier-a); }
+.mini-tier__letter--b { background: var(--tier-b); }
+.mini-tier__letter--c { background: var(--tier-c); }
+.mini-tier__letter--d { background: var(--tier-d); }
+
+.mini-tier__lane {
+  border-radius: 3px;
+  background: var(--surface-2);
+}
+
+/* Step 2: big question field */
+.wizard__input {
+  width: 100%;
+  min-height: 120px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--sticker);
+  color: var(--ink);
+  font: inherit;
+  font-size: 20px;
+  line-height: 1.3;
+  resize: vertical;
+}
+
+.wizard__input::placeholder {
+  color: var(--ink-soft);
+}
+
+.wizard__input:focus,
+.answer-row__input:focus {
+  outline: 3px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* Two-option toggle: « Sur les copains » / « Sur mes réponses » */
+.segmented {
+  display: flex;
+  gap: 8px;
+  padding: 4px;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.segmented__btn {
+  flex: 1 1 0;
+  min-height: 48px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.segmented__btn.is-selected {
+  background: var(--accent);
+  color: var(--ink);
+}
+
+.wizard__answers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wizard__answers > .muted {
+  margin: 0;
+}
+
+.answer-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.answer-row__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--sticker);
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+}
+
+.answer-row__remove {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.answer-row__remove[disabled] {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+
+/* Footer: « Annuler » alone, or « Retour » / « Envoyer » side by side (step 3 stacks them) */
+.wizard__foot {
+  display: flex;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.wizard__foot .btn {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.wizard__foot--stack {
+  flex-direction: column;
+}
+
+.wizard__foot--stack .btn {
+  flex: none;
+}
+
+/* Invités (T13): « + » tile of the name picker, guest form (overlay .wizard, see guest-view.js) */
+/* « + Invité »: an empty album slot, dashed, no sticker */
+.tile--add {
+  border: 2px dashed rgb(255 255 255 / 0.6);
+  background: transparent;
+  box-shadow: none;
+  color: var(--text);
+}
+
+.tile--add .tile__name {
+  background: transparent;
+  color: var(--text);
+}
+
+.tile__plus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 36px;
+  line-height: 1;
+}
+
+.guest-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.guest-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.guest-field__label {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.guest-input {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--sticker);
+  color: var(--ink);
+  font: inherit;
+  font-size: 18px;
+}
+
+.guest-input::placeholder {
+  color: var(--ink-soft);
+}
+
+.guest-input:focus {
+  outline: 3px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.guest-preview {
+  display: flex;
+  justify-content: center;
+}
+
+.guest-preview:empty {
+  display: none;
+}
+
+/* ---------- Devine sa réponse (guess) ---------- */
+
+/* Pick stage, target: the banner says she answers for the others */
+.guess-banner {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #15121f;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+/* « X répond en secret… », « Qu'a répondu X ? », « Les autres devinent ta réponse… » */
+.guess-status {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 20px;
+  line-height: 1.25;
+  text-align: center;
+}
+
+/* Target photo: square, centred, red strip with the name under it (like the results' winner sticker) */
+.guess-target {
+  width: 120px;
+  margin: 0 auto;
+}
+
+.guess-target--small {
+  width: 72px;
+}
+
+.guess-target .avatar {
+  position: relative;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+}
+
+.guess-target .avatar img {
+  position: absolute;
+  inset: 0;
+}
+
+.guess-target__name {
+  display: block;
+  margin-top: -2px;
+  padding: 2px 6px;
+  border-radius: 0 0 8px 8px;
+  background: var(--accent-2);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 16px;
+  line-height: 1.4;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.guess-target--small .guess-target__name {
+  font-size: 13px;
+}
+
+/* Results: the finders' heads, centred */
+.guess-found {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.guess-found__heads {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* ---------- Quelle était la question ? (which) ---------- */
+
+/* Possible questions (guess stage): one readable card per line, up to 200 characters, not the square stickers
+   of the short options. The selected card keeps its ✓ room and its yellow ring (not overridden here). */
+.widget--which .choice-grid--custom {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+
+.widget--which .choice-grid--custom .pill {
+  aspect-ratio: auto;
+  min-height: 56px;
+  padding: 10px 16px;
+  background: var(--sticker);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: left;
+  justify-content: flex-start;
+}
+
+.widget--which .choice-grid--custom .pill.is-selected {
+  padding-right: 44px;
+}
+
+/* Target's answer as text (pick stage): one line, up to 80 characters */
+.which-input {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--sticker);
+  color: var(--ink);
+  font: inherit;
+  font-size: 18px;
+}
+
+.which-input::placeholder {
+  color: var(--ink-soft);
+}
+
+.which-input:focus {
+  outline: 3px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* Target's answer as text, on a white card (guess stage, and results) */
+.which-answer {
+  width: 90%;
+  margin: 8px auto 0;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  background: var(--sticker);
+  box-shadow: var(--shadow-sticker);
+  transform: rotate(-1deg);
+}
+
+.which-answer__text {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.2;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* Results: the secret question as the winner sticker; the text wraps instead of being cut */
+.result-winner--text {
+  width: 100%;
+}
+
+.result-winner--text .result-winner__name {
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 22px;
+  line-height: 1.25;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Motion (« L'Album ») ----------
+   Only transform and opacity move. Transforms use the individual properties translate, scale and rotate,
+   so they compose with the static tilt of the stickers (transform). Tokens: base.css :root.
+   Entries run under .is-entering: app.js sets it on the first render of a screen key only, so a `state`
+   that changes nothing on screen never replays them. One-shot classes are set by the render or the tap
+   that caused them: is-new, is-away, is-dropped, is-sticking, just-selected. */
+
+/* Press: pressable tiles, buttons and chips scale down while pressed (no transition on the scale of the
+   bottom bar of the primary button: it sinks onto its shadow instead) */
+.chip,
+.rank-chip,
+.author-chip,
+.badge-token,
+.tier-row__label,
+.kind-card,
+.pager__btn,
+.edit-btn,
+.segmented__btn,
+.answer-row__remove,
+.banner__action {
+  transition: scale var(--dur-press) var(--ease-out);
+}
+
+.tile:active,
+.pill:active,
+.btn:active,
+.edit-btn:active,
+.pager__btn:active,
+.kind-card:active,
+.chip:active,
+.rank-chip:active,
+.author-chip:active,
+.badge-token:active,
+.tier-row__label:active,
+.segmented__btn:active,
+.answer-row__remove:active,
+.banner__action:active {
+  scale: 0.97;
+}
+
+.btn--primary:active {
+  translate: 0 3px;
+  box-shadow: 0 1px 0 var(--accent-shadow);
+}
+
+/* Selection: the ✓ pops on the tapped tile or pill only (just-selected is set by the tap, never by a re-render) */
+.tile.just-selected,
+.pill.just-selected {
+  animation: select-lift var(--dur-fast) var(--ease-spring);
+}
+
+.tile.just-selected::after,
+.pill.just-selected::after {
+  animation: check-pop var(--dur-fast) var(--ease-spring);
+}
+
+/* Drop: the chip or badge that was just placed settles */
+.is-dropped {
+  animation: drop-settle var(--dur-fast) var(--ease-spring);
+}
+
+/* Timer: the bar pulses in the last 5 seconds (is-urgent is set by app.js; the only loop here, it signals a state) */
+.timer__bar.is-urgent {
+  animation: urgent-pulse 600ms var(--ease-in-out) infinite;
+}
+
+/* Picker: a free sticker lifts and sinks when tapped; its folded corner fades */
+.grid-3.picker > .tile:not(.is-online):not(.is-offline):not(.tile--add)::before {
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.grid-3.picker > .tile.is-sticking::before {
+  opacity: 0;
+}
+
+.grid-3.picker > .tile.is-sticking {
+  animation: stick-pop var(--dur-med) var(--ease-spring);
+}
+
+/* Screen entry: question text, then the choices and slots in a 40 ms cascade (8 elements at most) */
+.is-entering:not(:has(> .results)) .question-text {
+  animation: rise-in var(--dur-med) var(--ease-out) backwards;
+}
+
+.is-entering .choice-grid > *,
+.is-entering .podium > *,
+.is-entering .rank-slots > *,
+.is-entering .rank-pool > *,
+.is-entering .widget--tierlist > * {
+  animation: cascade-in var(--dur-med) var(--ease-out) backwards;
+}
+
+.is-entering :is(.choice-grid, .podium, .rank-slots, .rank-pool, .widget--tierlist) > :nth-child(2) { animation-delay: 40ms; }
+.is-entering :is(.choice-grid, .podium, .rank-slots, .rank-pool, .widget--tierlist) > :nth-child(3) { animation-delay: 80ms; }
+.is-entering :is(.choice-grid, .podium, .rank-slots, .rank-pool, .widget--tierlist) > :nth-child(4) { animation-delay: 120ms; }
+.is-entering :is(.choice-grid, .podium, .rank-slots, .rank-pool, .widget--tierlist) > :nth-child(5) { animation-delay: 160ms; }
+.is-entering :is(.choice-grid, .podium, .rank-slots, .rank-pool, .widget--tierlist) > :nth-child(6) { animation-delay: 200ms; }
+.is-entering :is(.choice-grid, .podium, .rank-slots, .rank-pool, .widget--tierlist) > :nth-child(7) { animation-delay: 240ms; }
+.is-entering :is(.choice-grid, .podium, .rank-slots, .rank-pool, .widget--tierlist) > :nth-child(n + 8) { animation-delay: 280ms; }
+
+/* Anecdote read: the card turns from its back to its face (perspective on the screen, which holds it) */
+.is-entering:has(> .anecdote-read) {
+  perspective: 900px;
+}
+
+.is-entering .anecdote-read {
+  animation: card-flip var(--dur-med) var(--ease-out) backwards;
+}
+
+/* Results: the winning sticker drops into place, its glint crosses once, its count pops, rows cascade */
+.result-winner {
+  overflow: clip;
+  overflow-clip-margin: 16px; /* the count disc sits 14 px outside the sticker */
+}
+
+.result-winner::after,
+.debrief-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--sheen);
+  pointer-events: none;
+  translate: -120% 0;
+}
+
+.is-entering .result-winner {
+  animation: winner-drop var(--dur-slow) var(--ease-spring) backwards;
+}
+
+.is-entering .result-winner::after {
+  animation: sheen 900ms var(--ease-in-out) 300ms backwards;
+}
+
+.is-entering .result-winner__count {
+  animation: count-pop var(--dur-med) var(--ease-spring) 250ms backwards;
+}
+
+.is-entering .result-row {
+  animation: row-in var(--dur-med) var(--ease-out) backwards;
+  animation-delay: 200ms;
+}
+
+.is-entering .result-row:nth-child(2) { animation-delay: 260ms; }
+.is-entering .result-row:nth-child(3) { animation-delay: 320ms; }
+.is-entering .result-row:nth-child(4) { animation-delay: 380ms; }
+.is-entering .result-row:nth-child(5) { animation-delay: 440ms; }
+.is-entering .result-row:nth-child(n + 6) { animation-delay: 500ms; }
+
+/* Ranking podium: 3rd, then 2nd (+120 ms), then 1st (+240 ms) rise onto their steps; the lines cascade after */
+.is-entering .rank-podium__place {
+  animation: podium-rise var(--dur-med) var(--ease-spring) backwards;
+}
+
+.is-entering .rank-podium__place--3 { animation-delay: 0ms; }
+.is-entering .rank-podium__place--2 { animation-delay: 120ms; }
+.is-entering .rank-podium__place--1 { animation-delay: 240ms; }
+
+.is-entering .rank-result {
+  animation: row-in var(--dur-med) var(--ease-out) backwards;
+  animation-delay: 360ms;
+}
+
+.is-entering .rank-result:nth-child(2) { animation-delay: 420ms; }
+.is-entering .rank-result:nth-child(3) { animation-delay: 480ms; }
+.is-entering .rank-result:nth-child(4) { animation-delay: 540ms; }
+.is-entering .rank-result:nth-child(n + 5) { animation-delay: 600ms; }
+
+/* Debrief: after each card's own entry (--i * 900 ms), its glint crosses once */
+.debrief-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.is-entering .debrief-card::after {
+  animation: sheen 900ms var(--ease-in-out) calc(var(--i, 0) * 900ms + 300ms) backwards;
+}
+
+/* « x ont répondu » head, salle d'attente seat, « envoyée » line, and the seat that goes offline */
+.answered__item.is-new {
+  animation: head-in var(--dur-fast) var(--ease-spring) backwards;
+}
+
+.seat.is-new {
+  animation: seat-in var(--dur-med) var(--ease-spring) backwards;
+}
+
+.seat.is-away {
+  animation: seat-away var(--dur-med) var(--ease-out) both;
+}
+
+.answer-sent.is-new {
+  animation: answer-in var(--dur-fast) var(--ease-out) backwards;
+}
+
+/* Toast and connection banner: they slide in when shown (display goes from none to shown) */
+.toast:not([hidden]) {
+  animation: toast-in var(--dur-fast) var(--ease-out);
+}
+
+.banner:not([hidden]) {
+  animation: banner-in var(--dur-med) var(--ease-out);
+}
+
+/* Keyframes: transform (translate, scale, rotate) and opacity only */
+@keyframes select-lift {
+  from { scale: 0.96; }
+  to { scale: 1; }
+}
+
+@keyframes check-pop {
+  from { scale: 0.6; opacity: 0; }
+  to { scale: 1; opacity: 1; }
+}
+
+@keyframes drop-settle {
+  from { scale: 1.06; }
+  to { scale: 1; }
+}
+
+@keyframes urgent-pulse {
+  0%,
+  100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+@keyframes stick-pop {
+  0% { scale: 1; }
+  45% { scale: 1.06; }
+  100% { scale: 1; }
+}
+
+@keyframes rise-in {
+  from { opacity: 0; translate: 0 6px; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+@keyframes cascade-in {
+  from { opacity: 0; translate: 0 10px; scale: 0.96; }
+  to { opacity: 1; translate: 0 0; scale: 1; }
+}
+
+@keyframes card-flip {
+  from { opacity: 0; transform: rotateY(90deg); }
+  to { opacity: 1; transform: rotateY(0deg); }
+}
+
+/* Starts from -6 deg (the sticker keeps its static -2 deg): the composed angle goes from -8 deg to -2 deg */
+@keyframes winner-drop {
+  from { opacity: 0; translate: 0 -24px; rotate: -6deg; scale: 0.95; }
+  to { opacity: 1; translate: 0 0; rotate: 0deg; scale: 1; }
+}
+
+@keyframes sheen {
+  from { translate: -120% 0; }
+  to { translate: 120% 0; }
+}
+
+@keyframes count-pop {
+  from { opacity: 0; scale: 0.6; }
+  to { opacity: 1; scale: 1; }
+}
+
+@keyframes row-in {
+  from { opacity: 0; translate: 0 8px; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+@keyframes podium-rise {
+  from { opacity: 0; translate: 0 16px; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+@keyframes head-in {
+  from { opacity: 0; scale: 0.6; }
+  to { opacity: 1; scale: 1; }
+}
+
+@keyframes seat-in {
+  from { opacity: 0; scale: 0.9; }
+  to { opacity: 1; scale: 1; }
+}
+
+@keyframes seat-away {
+  from { opacity: 1; }
+  to { opacity: 0.35; }
+}
+
+@keyframes answer-in {
+  from { opacity: 0; translate: 0 8px; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+@keyframes toast-in {
+  from { opacity: 0; translate: 0 12px; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+@keyframes banner-in {
+  from { translate: 0 -100%; }
+  to { translate: 0 0; }
+}
+
+/* Reduced motion: no movement, no transition. Presses stay as a state (colour and shadow), without scale. */
+@media (prefers-reduced-motion: reduce) {
+  .is-entering *,
+  .is-entering *::before,
+  .is-entering *::after,
+  .is-entering .rank-podium__place,
+  .is-entering .rank-result,
+  .just-selected,
+  .just-selected::after,
+  .is-new,
+  .is-away,
+  .is-dropped,
+  .is-sticking,
+  .timer__bar.is-urgent,
+  .toast,
+  .banner,
+  .debrief-card::after {
+    animation: none !important;
+  }
+
+  .tile,
+  .pill,
+  .btn,
+  .chip,
+  .rank-chip,
+  .author-chip,
+  .badge-token,
+  .tier-row__label,
+  .kind-card,
+  .pager__btn,
+  .edit-btn,
+  .segmented__btn,
+  .answer-row__remove,
+  .banner__action,
+  .seat,
+  .grid-3.picker > .tile:not(.is-online):not(.is-offline):not(.tile--add)::before {
+    transition: none;
+  }
+
+  .tile:active,
+  .pill:active,
+  .btn:active,
+  .edit-btn:active,
+  .pager__btn:active,
+  .kind-card:active,
+  .chip:active,
+  .rank-chip:active,
+  .author-chip:active,
+  .badge-token:active,
+  .tier-row__label:active,
+  .segmented__btn:active,
+  .answer-row__remove:active,
+  .banner__action:active {
+    scale: none;
+  }
+
+  .btn--primary:active {
+    translate: none;
+  }
+
+  /* Wheel (« La roue qui balance »): no shake, no flash, no drop, no blink, no pulse. The rotation stays
+     (Web Animations, same duration as the server); the tapes and the highlight are shown at their final place. */
+  .wheel-screen *,
+  .wheel-screen *::before,
+  .wheel-screen *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .wheel-screen[data-stage="alert"] .wheel-tape--a {
+    transform: rotate(-12deg) translateX(0);
+  }
+
+  .wheel-screen[data-stage="alert"] .wheel-tape--b {
+    transform: rotate(9deg) translateX(0);
+  }
+
+  .wheel-screen[data-stage="landed"] .wheel-hl {
+    opacity: 0.6;
+  }
+}
+
+/* ---------- Wheel (« La roue qui balance ») ----------
+   Overlay built by wheel-view.js, outside #app. Stages on .wheel-screen[data-stage]: alert (surprise), ready,
+   spin, hold (suspense), landed, reveal. Host / copain: .is-host / .is-copain on the overlay. The wheel's rotation
+   is set from JS; everything else moves through transform and opacity only, with the motion tokens of base.css.
+   The backdrop keeps the values of the validated mock-up (docs/identite/roue.html). */
+
+.wheel-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 85;
+  overflow: hidden;
+  color: var(--text);
+  font-family: var(--font-body);
+}
+
+.wheel-screen__backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 42%, rgb(36 64 214 / 0.35), rgb(8 10 36 / 0.92) 72%);
+  -webkit-backdrop-filter: blur(3px) saturate(0.5);
+  backdrop-filter: blur(3px) saturate(0.5);
+}
+
+/* The phone-like column: centred, shakes during the surprise */
+.wheel-screen__panel {
+  position: absolute;
+  inset: 0;
+  max-width: 480px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.wheel-screen[data-stage="alert"] .wheel-screen__panel {
+  animation: wheel-shake 0.55s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+.wheel-screen__flash {
+  position: absolute;
+  inset: 0;
+  background: var(--text);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.wheel-screen[data-stage="alert"] .wheel-screen__flash {
+  animation: wheel-flash 0.5s ease-out;
+}
+
+/* Surprise tapes: two bands with the title, sliding in from both sides */
+.wheel-screen__tapes {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.wheel-tape {
+  position: absolute;
+  left: -25%;
+  width: 150%;
+  height: 40px;
+  overflow: hidden;
+  white-space: nowrap;
+  font: 900 21px/32px var(--font-display);
+  letter-spacing: 0.05em;
+  border-block: 4px solid var(--ink);
+  box-shadow: 0 5px 0 rgb(0 0 0 / 0.3);
+}
+
+.wheel-tape span {
+  display: inline-block;
+}
+
+.wheel-tape--a {
+  top: 31%;
+  background: var(--accent);
+  color: var(--ink);
+  transform: rotate(-12deg) translateX(-120%);
+}
+
+.wheel-tape--b {
+  top: 56%;
+  background: var(--accent-2);
+  color: var(--text);
+  transform: rotate(9deg) translateX(120%);
+}
+
+.wheel-screen[data-stage="alert"] .wheel-tape--a {
+  animation: wheel-tape-a-in 0.45s var(--ease-spring) 0.12s both;
+}
+
+.wheel-screen[data-stage="alert"] .wheel-tape--b {
+  animation: wheel-tape-b-in 0.45s var(--ease-spring) 0.24s both;
+}
+
+.wheel-screen[data-stage="alert"] .wheel-tape span {
+  animation: wheel-marquee 5s linear infinite;
+}
+
+.wheel-screen[data-stage="alert"] .wheel-tape--b span {
+  animation-direction: reverse;
+}
+
+/* Layers: the wheel, then the reveal over the (dimmed) wheel */
+.wheel-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* safe: a layer taller than the screen (small phone, long ranking reveal) scrolls from its top instead of clipping */
+  justify-content: safe center;
+  gap: 12px;
+  overflow-y: auto;
+  padding: 20px 16px 16px;
+  transition:
+    opacity var(--dur-med) var(--ease-out),
+    filter var(--dur-med) var(--ease-out);
+}
+
+.wheel-layer--wheel,
+.wheel-layer--reveal {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.wheel-screen:is([data-stage="ready"], [data-stage="spin"], [data-stage="hold"], [data-stage="landed"]) .wheel-layer--wheel {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.wheel-screen[data-stage="reveal"] .wheel-layer--wheel {
+  opacity: 0.18;
+  filter: blur(2px);
+}
+
+.wheel-screen[data-stage="reveal"] .wheel-layer--reveal {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Title and subtitle */
+.wheel-title {
+  background: var(--accent-2);
+  color: var(--text);
+  font: 900 20px/0.9 var(--font-display);
+  text-transform: uppercase;
+  text-align: center;
+  padding: 7px 14px 6px;
+  border-radius: 8px;
+  box-shadow: var(--shadow-sticker);
+  transform: rotate(-3deg) scale(0);
+}
+
+.wheel-title span {
+  display: block;
+  color: var(--accent);
+  font-size: 34px;
+}
+
+.wheel-screen:is([data-stage="ready"], [data-stage="spin"], [data-stage="hold"], [data-stage="landed"]) .wheel-title {
+  transform: rotate(-3deg) scale(1);
+  transition: transform 0.5s var(--ease-spring) 0.55s;
+}
+
+.wheel-sub {
+  font-weight: 600;
+  font-size: 15px;
+  color: rgb(255 255 255 / 0.85);
+  opacity: 0;
+}
+
+.wheel-screen[data-stage="ready"] .wheel-sub {
+  opacity: 1;
+  transition: opacity 0.3s 0.8s;
+}
+
+/* The wheel: falls from the top (ready), then stays. Bulbs and pointer are children of .wheel-wrap. */
+.wheel-wrap {
+  position: relative;
+  container-type: inline-size;
+  width: 250px;
+  max-width: 78%;
+  aspect-ratio: 1;
+  flex: none;
+  margin-top: 18px;
+  transform: translateY(-150%) rotate(-60deg) scale(0.6);
+  opacity: 0;
+}
+
+.wheel-screen:is([data-stage="ready"], [data-stage="spin"], [data-stage="hold"], [data-stage="landed"], [data-stage="reveal"]) .wheel-wrap {
+  transform: none;
+  opacity: 1;
+  transition:
+    transform 0.9s var(--ease-spring) 0.15s,
+    opacity 0.2s 0.15s;
+}
+
+/* The disc: rotation set from JS (style.transform), conic slices from wheel-view.js */
+.wheel-disc {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 10px solid var(--ink);
+  box-shadow: 0 0 0 4px var(--sticker), 0 18px 40px rgb(0 0 0 / 0.55);
+}
+
+/* Winner's slice, inside the disc so it turns with it (--from and --seg set by wheel-view.js) */
+.wheel-hl {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from var(--from, 0deg), rgb(255 255 255 / 0.6) 0 var(--seg), transparent 0);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.wheel-screen[data-stage="landed"] .wheel-hl {
+  animation: wheel-pulse 0.5s ease-in-out 3 forwards;
+}
+
+/* One face per candidate, on its slice (--a = centre of the slice) */
+.wheel-face {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 21%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--sticker);
+  box-shadow: 0 0 0 2px var(--ink);
+  transform: rotate(var(--a)) translateY(-160%);
+  transition:
+    transform 0.35s var(--ease-spring),
+    opacity 0.35s var(--ease-out);
+}
+
+.wheel-face .avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+}
+
+.wheel-face.is-won {
+  transform: rotate(var(--a)) translateY(-160%) scale(1.3);
+  box-shadow: 0 0 0 3px var(--accent), 0 6px 14px rgb(0 0 0 / 0.5);
+  z-index: 1;
+}
+
+.wheel-face.is-lost {
+  opacity: 0.3;
+}
+
+.wheel-hub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 22%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 4px solid var(--sticker);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  font: 900 28px/1 var(--font-display);
+  box-shadow: 0 3px 0 rgb(0 0 0 / 0.3);
+  z-index: 2;
+}
+
+.wheel-bulb {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px;
+  border-radius: 50%;
+  background: #fff6b3;
+  box-shadow: 0 0 6px 2px rgb(255 212 0 / 0.8);
+  transform: rotate(var(--b)) translateY(calc(-50cqw + 5px));
+  z-index: 2;
+}
+
+.wheel-screen[data-stage="ready"] .wheel-bulb {
+  animation: wheel-blink 1s steps(1) infinite;
+}
+
+.wheel-screen[data-stage="spin"] .wheel-bulb {
+  animation: wheel-blink 0.22s steps(1) infinite;
+}
+
+.wheel-screen[data-stage="hold"] .wheel-bulb {
+  animation: wheel-blink 0.7s steps(1) infinite;
+}
+
+.wheel-screen[data-stage="landed"] .wheel-bulb {
+  animation: wheel-blink 0.12s steps(1) infinite;
+}
+
+/* Declared after the stages: the alternate bulbs start half a blink later, whatever the stage */
+.wheel-screen .wheel-bulb:nth-child(odd) {
+  animation-delay: -0.5s;
+}
+
+/* Pointer: fixed at the top; strain (suspense) bends it, tick clicks on each slice edge */
+.wheel-pin {
+  position: absolute;
+  left: 50%;
+  top: -18px;
+  width: 36px;
+  height: 44px;
+  margin-left: -18px;
+  z-index: 3;
+  filter: drop-shadow(0 3px 0 rgb(0 0 0 / 0.4));
+  transform-origin: 50% 20%;
+  transition: transform var(--dur-med) var(--ease-out);
+}
+
+.wheel-pin i {
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+.wheel-pin::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 7px;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+.wheel-pin.is-strain {
+  transform: rotate(-12deg);
+}
+
+.wheel-pin.is-tick {
+  animation: wheel-tick 0.14s ease-out;
+}
+
+/* Foot: one line per stage, the host's button or the copain's wait */
+.wheel-foot {
+  width: 100%;
+  min-height: 64px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.wheel-foot > * {
+  display: none;
+}
+
+.wheel-foot p {
+  font: 800 21px/1.1 var(--font-display);
+}
+
+.wheel-foot small {
+  display: block;
+  font: 600 14px/1.3 var(--font-body);
+  color: rgb(255 255 255 / 0.75);
+  margin-top: 4px;
+}
+
+.wheel-screen.is-host[data-stage="ready"] .wheel-cta {
+  display: flex;
+  animation: wheel-breathe 1.2s ease-in-out infinite;
+}
+
+.wheel-screen.is-copain[data-stage="ready"] .wheel-wait {
+  display: block;
+}
+
+.wheel-screen[data-stage="spin"] .wheel-spin {
+  display: block;
+}
+
+.wheel-screen[data-stage="hold"] .wheel-hold {
+  display: block;
+  animation: wheel-pop 0.3s var(--ease-spring);
+}
+
+.wheel-screen[data-stage="landed"] .wheel-land {
+  display: block;
+  animation: wheel-pop 0.4s var(--ease-spring);
+}
+
+.wheel-land b {
+  color: var(--accent);
+}
+
+.wheel-error {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  margin: 0;
+  text-align: center;
+  font-weight: 700;
+  color: var(--error-text);
+}
+
+/* Reveal: kicker, the winner's sticker stamped « Balancé ! », the secret answer on a card */
+.wheel-kicker {
+  font: 900 20px/1 var(--font-display);
+  color: var(--accent);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transform: translateY(-16px);
+}
+
+.wheel-screen[data-stage="reveal"] .wheel-kicker {
+  transform: none;
+  transition: transform var(--dur-slow) var(--ease-out);
+}
+
+.wheel-hero-slot,
+.wheel-card-slot {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.wheel-hero {
+  position: relative;
+  width: 42%;
+  transform: scale(2.4) rotate(-25deg);
+}
+
+.wheel-hero .tile {
+  padding: 6px;
+}
+
+.wheel-hero .tile__name {
+  font-size: 22px;
+}
+
+.wheel-screen[data-stage="reveal"] .wheel-hero {
+  transform: rotate(-4deg);
+  transition: transform 0.6s var(--ease-spring) 0.1s;
+}
+
+.wheel-stamp {
+  position: absolute;
+  right: -30px;
+  bottom: 38%;
+  z-index: 1;
+  color: var(--accent-2);
+  border: 4px solid var(--accent-2);
+  border-radius: 8px;
+  padding: 3px 8px 1px;
+  font: 900 24px/1 var(--font-display);
+  text-transform: uppercase;
+  background: rgb(255 255 255 / 0.94);
+  transform: rotate(-14deg) scale(3);
+  opacity: 0;
+}
+
+.wheel-screen[data-stage="reveal"] .wheel-stamp {
+  transform: rotate(-14deg) scale(1);
+  opacity: 1;
+  transition:
+    transform 0.22s cubic-bezier(0.5, 0, 0.75, 0) 0.8s,
+    opacity 0.1s 0.8s;
+}
+
+.wheel-card-slot {
+  transform: translateY(40px);
+  opacity: 0;
+}
+
+.wheel-screen[data-stage="reveal"] .wheel-card-slot {
+  transform: none;
+  opacity: 1;
+  transition:
+    transform 0.5s var(--ease-out) 1s,
+    opacity 0.3s 1s;
+}
+
+.wheel-card {
+  width: 100%;
+  display: grid;
+  gap: 6px;
+  background: var(--paper) repeating-linear-gradient(-45deg, var(--paper-line) 0 6px, transparent 6px 12px);
+  color: var(--ink);
+  border-radius: var(--radius);
+  padding: 10px 12px 12px;
+  box-shadow: 0 4px 0 rgb(0 0 0 / 0.25);
+}
+
+.wheel-card__q {
+  font-size: 14px;
+  line-height: 1.25;
+  color: var(--ink-soft);
+}
+
+.wheel-card__label {
+  font: 800 18px/1 var(--font-display);
+  color: var(--bg);
+  border-top: 2px solid rgb(36 64 214 / 0.18);
+  padding-top: 6px;
+}
+
+.wheel-card__note {
+  font: 600 14px/1 var(--font-body);
+  color: var(--ink-soft);
+}
+
+.wheel-noanswer {
+  margin: 0;
+  text-align: center;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.wheel-picks {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.wheel-item {
+  width: 70px;
+}
+
+.wheel-item .tile__name {
+  font-size: 13px;
+}
+
+.wheel-item--face {
+  display: grid;
+  place-items: center;
+  width: 70px;
+  aspect-ratio: 1;
+  padding: 6px;
+  border-radius: 6px;
+  color: var(--text);
+  font: 900 14px/1.05 var(--font-display);
+  text-align: center;
+}
+
+.wheel-item__label {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+.wheel-sd {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+}
+
+.wheel-sd__col {
+  width: 82px;
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+}
+
+.wheel-sd__col .wheel-item {
+  width: 100%;
+}
+
+.wheel-tag {
+  border-radius: 999px;
+  padding: 1px 9px;
+  font: 800 14px/1.4 var(--font-display);
+}
+
+.wheel-tag.is-smart {
+  background: var(--foil);
+  color: var(--ink);
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
+.wheel-tag.is-dumb {
+  background: var(--ink);
+  color: var(--accent);
+}
+
+.wheel-rank {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.wheel-rank__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 800 17px/1 var(--font-display);
+}
+
+.wheel-rank__num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--accent);
+  color: var(--ink);
+  font-style: normal;
+  font-size: 14px;
+}
+
+.wheel-rank__row.is-last .wheel-rank__num {
+  background: var(--accent-2);
+  color: var(--text);
+}
+
+.wheel-rank__label {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.wheel-rank__gap {
+  padding-left: 30px;
+  font: 800 17px/1 var(--font-display);
+  color: var(--ink-soft);
+}
+
+.wheel-reveal-wait {
+  font-weight: 600;
+  color: rgb(255 255 255 / 0.8);
+}
+
+.wheel-next {
+  width: 100%;
+}
+
+.wheel-screen.is-copain .wheel-next {
+  display: none;
+}
+
+.wheel-screen.is-host .wheel-reveal-wait {
+  display: none;
+}
+
+/* Keyframes: transform and opacity only */
+@keyframes wheel-shake {
+  10%, 90% { transform: translateX(-2px) rotate(-0.4deg); }
+  20%, 80% { transform: translateX(4px) rotate(0.6deg); }
+  30%, 50%, 70% { transform: translateX(-7px) rotate(-1deg); }
+  40%, 60% { transform: translateX(7px) rotate(1deg); }
+}
+
+@keyframes wheel-flash {
+  0% { opacity: 0.95; }
+  100% { opacity: 0; }
+}
+
+@keyframes wheel-tape-a-in {
+  from { transform: rotate(-12deg) translateX(-120%); }
+  to { transform: rotate(-12deg) translateX(0); }
+}
+
+@keyframes wheel-tape-b-in {
+  from { transform: rotate(9deg) translateX(120%); }
+  to { transform: rotate(9deg) translateX(0); }
+}
+
+@keyframes wheel-marquee {
+  to { transform: translateX(-50%); }
+}
+
+@keyframes wheel-pulse {
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+@keyframes wheel-blink {
+  50% {
+    background: rgb(107 93 16);
+    box-shadow: none;
+  }
+}
+
+@keyframes wheel-tick {
+  40% { transform: rotate(-22deg); }
+}
+
+@keyframes wheel-pop {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+}
+
+@keyframes wheel-breathe {
+  50% { transform: scale(1.04); }
+}
+
+/* ---------- Join QR (« Scanne pour rejoindre », lobby) ---------- */
+/* A white sticker with the code and the address; the code itself stays black on white (scanners need it). */
+.join-qr {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin: 0;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: var(--radius-sticker);
+  background: var(--sticker);
+  color: var(--ink);
+  box-shadow: var(--shadow-sticker);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform var(--dur-press) var(--ease-out);
+}
+
+.join-qr:active {
+  transform: scale(0.98);
+}
+
+.join-qr:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.join-qr.is-missing,
+.join-qr.is-pending {
+  cursor: default;
+}
+
+.join-qr.is-missing:active {
+  transform: none;
+}
+
+.join-qr__code {
+  flex: none;
+  display: block;
+  width: 84px;
+  height: 84px;
+  padding: 0;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.join-qr.is-pending .join-qr__code {
+  background: var(--track);
+}
+
+.join-qr__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.join-qr__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.join-qr__title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 20px;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.join-qr__url {
+  font-size: 14px;
+  line-height: 1.3;
+  color: var(--ink-soft);
+  overflow-wrap: anywhere;
+}
+
+/* Enlarged code (tap on the card): full-screen overlay, outside #app. The [hidden] rule keeps it closed. */
+.join-qr-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: var(--bg);
+  cursor: pointer;
+}
+
+.join-qr-overlay[hidden] {
+  display: none;
+}
+
+.join-qr-overlay__panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: min(100%, 440px);
+  padding: 20px;
+  border-radius: var(--radius);
+  background: var(--sticker);
+  color: var(--ink);
+  box-shadow: var(--shadow-sticker);
+  text-align: center;
+}
+
+.join-qr-overlay__code {
+  display: block;
+  width: min(78vw, 56vh, 360px);
+  height: min(78vw, 56vh, 360px);
+  padding: 0;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.join-qr-overlay__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.join-qr-overlay__title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+.join-qr-overlay__url {
+  font-size: 18px;
+  overflow-wrap: anywhere;
+  color: var(--ink-soft);
+}
+
+.join-qr-overlay__close {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 10px 24px;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 18px;
+  box-shadow: 0 3px 0 var(--accent-shadow);
+}

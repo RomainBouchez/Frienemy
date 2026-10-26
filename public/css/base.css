@@ -1,0 +1,269 @@
+@import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800;900&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap');
+
+/* Tokens (SPEC §10). Identity « L'Album » (docs/identite/album.html): every friend is a sticker. */
+:root {
+  --bg: #2440d6;
+  --bg-stripes: repeating-linear-gradient(-45deg, rgb(255 255 255 / 0.05) 0 14px, transparent 14px 28px);
+  --surface: #3653e0;
+  --surface-2: #4a66ea;
+  --border: #7d93f2;
+  --text: #ffffff;
+  --muted: #cdd5ff;
+  --ink: #1a237e; /* text on light surfaces: stickers, yellow buttons */
+  --sticker: #ffffff;
+  --accent: #ffd400;
+  --accent-shadow: #c9a600;
+  --accent-2: #e8302a;
+  --ok: #2bd673;
+  --foil: linear-gradient(115deg, #ffd6e8, #c9f3ff 25%, #fff6b3 45%, #d9c9ff 65%, #b8ffe0 85%, #ffd6e8);
+  --shadow-sticker: 0 3px 0 rgb(0 0 0 / 0.25);
+  --tier-s: #ff5d73;
+  --tier-a: #ff9f43;
+  --tier-b: #ffd23f;
+  --tier-c: #4cd97b;
+  --tier-d: #4d9fff;
+  /* L'Album additions: folded corner, taken friend, sticker back, grid bars, custom option faces */
+  --ink-soft: #4b52a0; /* muted text on light surfaces (stickers, white fields) */
+  --sticker-corner: #b9bdd1;
+  --online-band: #8d93b5;
+  --paper: #f3f5ff;
+  --paper-line: rgb(36 64 214 / 0.06);
+  --track: #e3e6f5;
+  --error-text: #ffd0cc; /* red is too dark to read on the blue background */
+  --pill-1: #ff9f43;
+  --pill-2: #2ec4b6;
+  --pill-3: #e8302a;
+  --pill-4: #9b5de5;
+  --pill-5: #4cd97b;
+  --pill-6: #4d9fff;
+  --radius: 12px;
+  --radius-sticker: 10px;
+  /* Motion (vocabulary of game.css, section Motion): one easing set, one duration scale */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1); /* default UI easing */
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1); /* something moving across the screen */
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1); /* light overshoot, playful moments only */
+  --dur-press: 140ms;
+  --dur-fast: 180ms;
+  --dur-med: 260ms;
+  --dur-slow: 420ms;
+  --sheen: linear-gradient(105deg, transparent 40%, rgb(255 255 255 / 0.55) 50%, transparent 60%); /* holographic glint */
+  --font-display: 'Big Shoulders Display', 'Arial Narrow', sans-serif;
+  --font-body: 'Barlow Semi Condensed', system-ui, sans-serif;
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  background-image: var(--bg-stripes);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+}
+
+h1, h2, h3, .btn {
+  font-family: var(--font-display);
+  font-weight: 800;
+}
+
+.container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* Avatar: size driven by --size. Up to 40px the photo is round; above 40px it is a sticker
+   with a 6px corner (the 1000 factor makes every size above 40px hit the 6px floor). */
+.avatar {
+  --size: 56px;
+  display: inline-block;
+  width: var(--size);
+  height: var(--size);
+  border-radius: min(50%, max(6px, calc(50% - max(0px, var(--size) - 40px) * 1000)));
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Fallback when the photo fails: player colour (--color, set inline) + initial */
+.avatar--fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color, var(--surface-2));
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: calc(var(--size) * 0.4);
+}
+
+/* Tile: a sticker (photo + red name strip). Layout, tilt and picker states live in game.css. */
+.tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0;
+  padding: 5px;
+  border: 0;
+  border-radius: var(--radius-sticker);
+  background: var(--sticker);
+  color: var(--ink);
+  box-shadow: var(--shadow-sticker);
+  font: inherit;
+  cursor: pointer;
+  /* scale is the press (individual property, composes with the tilt); transform is the selection lift */
+  transition:
+    transform var(--dur-fast) var(--ease-spring),
+    scale var(--dur-press) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.tile .avatar {
+  --size: 72px;
+  position: relative;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  border-radius: 6px;
+}
+
+.tile .avatar img {
+  position: absolute;
+  inset: 0;
+}
+
+/* Selected sticker: lifts (scale, no tilt), yellow ring and shadow */
+.tile.is-selected,
+.pill.is-selected {
+  box-shadow: 0 0 0 4px var(--accent), 0 10px 18px rgb(0 0 0 / 0.35);
+  transform: scale(1.05);
+}
+
+.pill.is-selected {
+  padding-right: 44px; /* keep long labels clear of the centred ✓ badge */
+}
+
+/* ✓ badge: yellow disc, top-right corner of the sticker */
+.tile.is-selected::after,
+.pill.is-selected::after {
+  content: '✓';
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 800;
+  /* Grid centring: the glyph sits in the middle of the badge on both axes, whatever the font metrics. */
+  display: grid;
+  place-items: center;
+  line-height: 1;
+}
+
+/* Wide pill: the badge is centred vertically on the right edge of the option. */
+.pill.is-selected::after {
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+}
+
+.tile.is-disabled,
+.tile[disabled] {
+  opacity: 0.35;
+}
+
+/* Pill: full-width option button (custom options) */
+.pill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 52px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--sticker);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform var(--dur-fast) var(--ease-spring),
+    scale var(--dur-press) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+/* Generic disabled states */
+[disabled],
+.is-disabled {
+  cursor: not-allowed;
+}
+
+/* Button */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 52px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: var(--radius);
+  font-size: 16px;
+  cursor: pointer;
+  transition:
+    scale var(--dur-press) var(--ease-out),
+    translate var(--dur-press) var(--ease-out),
+    box-shadow var(--dur-press) var(--ease-out);
+}
+
+.btn--primary {
+  background: var(--accent);
+  color: var(--ink);
+  font-size: 22px;
+  font-weight: 900;
+  box-shadow: 0 4px 0 var(--accent-shadow);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--text);
+  border: 0;
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.5);
+}
+
+.btn[disabled],
+.btn.is-disabled {
+  opacity: 0.4;
+}
+
+/* Fixed top banner (connection lost) */
+.banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 12px 16px;
+  background: var(--accent-2);
+  color: var(--text);
+  font-weight: 600;
+  text-align: center;
+}

@@ -1,0 +1,9 @@
+node_modules/
+data/questions.json
+data/settings.json
+*.log
+.env
+.DS_Store
+avatars-originals/
+data/guests.json
+data/guest-avatars/

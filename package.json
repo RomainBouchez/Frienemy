@@ -1,0 +1,18 @@
+{
+  "name": "frienemy",
+  "version": "1.0.0",
+  "description": "Quiz entre amis, à lancer sur son PC : chacun rejoint depuis son téléphone.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node launch.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "qrcode-generator": "2.0.4",
+    "socket.io": "^4.8.1"
+  }
+}
